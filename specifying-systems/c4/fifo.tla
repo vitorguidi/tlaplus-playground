@@ -1,4 +1,4 @@
----------------------- MODULE innerfifo ---------------------------
+---------------------- MODULE fifo ---------------------------
 EXTENDS Naturals, Sequences
 VARIABLES in, out, q
 CONSTANT Message, MaxSize
