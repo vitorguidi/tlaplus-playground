@@ -1,6 +1,6 @@
 ---------------MODULE leaderelection-----------------
-EXTENDS Integers, Sequences, FiniteSets, Naturals
-CONSTANTS NrNodes, MaxTerms, MaxReboots
+EXTENDS Integers, Naturals, Sequences, TLC, FiniteSets
+CONSTANTS MaxTerms, MaxReboots, NodeIds
 VARIABLES nodes, messages, leaderHistory, reboots
 
 ValidStates == {
@@ -9,8 +9,6 @@ ValidStates == {
     "LEADER"
 }
 
-NodeIds == 1..NrNodes
-
 ValidMessageTypes == {
     "AppendEntriesRequest", 
     "AppendEntriesResponse", 
@@ -18,8 +16,10 @@ ValidMessageTypes == {
     "RequestVoteResponse"
 }
 
+SymmNodes == Permutations(NodeIds)
+
 Init == 
-    /\ nodes = [x \in 1..NrNodes |-> [ term |-> 0, state |-> "FOLLOWER", votedFor |-> -1, id |-> x, receivedVotes |-> {}] ]
+    /\ nodes = [x \in NodeIds |-> [ term |-> 0, state |-> "FOLLOWER", votedFor |-> -1, id |-> x, receivedVotes |-> {}] ]
     /\ messages = {}
     /\ leaderHistory = {}
     /\ reboots = 0
@@ -166,7 +166,7 @@ RequestVotes(candidate, otherNode) ==
 
 BecomeLeader(n) ==
     /\ nodes[n].state = "CANDIDATE"
-    /\ Cardinality(nodes[n].receivedVotes) > NrNodes \div 2
+    /\ Cardinality(nodes[n].receivedVotes) > Cardinality(NodeIds) \div 2
     /\ nodes' = [nodes EXCEPT ![n].state = "LEADER"]
     /\ leaderHistory' = leaderHistory \cup {[nodeId |-> nodes[n].id, term |-> nodes[n].term ]}
     /\ UNCHANGED <<messages, reboots>>
